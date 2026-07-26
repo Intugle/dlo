@@ -112,7 +112,7 @@ def execute_query(ctx: click.Context, *args, **kwargs):
 
     query = kwargs.get("query")
 
-    cursor_limit = kwargs.get("cached_manifest") or project.cursor_limit
+    cursor_limit = kwargs.get("cursor_limit") or project.cursor_limit
     if cursor_limit < 0:
         cursor_limit = None
 

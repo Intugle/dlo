@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from enum import StrEnum
+from pathlib import Path
 
+from mashumaro.config import BaseConfig
 from mashumaro.mixins.json import DataClassJSONMixin
 from mashumaro.types import SerializableType
 
@@ -49,4 +51,14 @@ class EnumBase(SerializableType, StrEnum):
 
 
 @dataclass
-class SchemaMixin(DataClassJSONMixin): ...
+class SchemaMixin(DataClassJSONMixin):
+
+    class Config(BaseConfig):
+        # This will remove any fields that are None
+        omit_none = True
+        serialization_strategy = {
+            Path: {
+                "serialize": str,
+                "deserialize": Path,
+            }
+        }

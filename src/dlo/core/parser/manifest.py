@@ -56,6 +56,9 @@ class ManifestLoader:
         self.project = project
         self.manifest = Manifest()
 
+    def _get_relative_path_to_project(self, absolute_path: Path):
+        return absolute_path.relative_to(self.project.project_root_path)
+
     def _check_if_name_already_exists(
         self, file_path: Path, name: str, resource_type: ResourceTypes
     ):
@@ -95,7 +98,7 @@ class ManifestLoader:
         except Exception as exc:
             raise errors.DloParseError(f"Failed to parse YAML file {file_path}") from exc
 
-        file_path_str = file_path.absolute().as_posix()
+        relative_file_path = self._get_relative_path_to_project(file_path)
 
         # Iterate over each resource type defined in the YAML file
         for resource_type, resource_data in data.items():
@@ -121,12 +124,12 @@ class ManifestLoader:
 
             # Validate and add each resource to the manifest
             for raw_resource in resource_data:
-                resource_dict = {**raw_resource, "file_path": file_path_str}
+                resource_dict = {**raw_resource, "file_path": relative_file_path}
                 try:
                     validated_data = resource_model.from_dict(resource_dict)
                 except Exception as e:
                     raise errors.DloCompilationError(
-                        f"Error while parsing file {file_path_str}: {e}"
+                        f"Error while parsing file {relative_file_path}: {e}"
                     ) from e
 
                 # Handle Model-specific logic
@@ -169,10 +172,10 @@ class ManifestLoader:
         self._check_if_name_already_exists(file_path, name, ResourceTypes.code)
 
         sql = FileReaderFromFileSystem.read_file(file_path)
-        absolute_file_path = file_path.absolute().as_posix()
+        relative_file_path = self._get_relative_path_to_project(file_path)
 
         # Store SQL content using string path as key for consistency
-        self.manifest.code[name] = Code(name=name, file_path=absolute_file_path, code=sql)
+        self.manifest.code[name] = Code(name=name, file_path=relative_file_path, code=sql)
 
         log.debug("Added SQL file to manifest: %s (%d characters)", file_path, len(sql))
 

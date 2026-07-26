@@ -184,16 +184,16 @@ class GraphCompiler:
             node.compiled_code = node.raw_code
 
         # write compiled code
-        node.compiled_path = self.write_compiled_code_node(node).absolute().as_posix()
+        node.compiled_path = self.write_compiled_code_node(node)
 
     def write_compiled_code_node(self, model: CompiledResourceMixin) -> Path:
         code_path = Path(model.code_path)
-        relative_path = code_path.relative_to(self.project.project_root_path)
 
-        compiled_path = self.project.project_root_path / TARGET_DIR / relative_path
-        compiled_path.parent.mkdir(parents=True, exist_ok=True)
+        compiled_path = TARGET_DIR / code_path
+        absolute_compiled_path = self.project.project_root_path / compiled_path
+        absolute_compiled_path.parent.mkdir(parents=True, exist_ok=True)
 
-        with open(compiled_path, "w", encoding="utf-8") as f:
+        with open(absolute_compiled_path, "w", encoding="utf-8") as f:
             f.write(model.compiled_code)
         return compiled_path
 

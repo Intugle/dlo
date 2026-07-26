@@ -156,7 +156,7 @@ class Runner:
             if node.details is not None:
                 cte = InjectedCTE(
                     id=node.unique_id,
-                    sql=f"{node.name} as (SELECT * FROM {node.details.full_name}\n)",
+                    sql=f"{node.name} as (\nSELECT * FROM {node.details.full_name}\n)",
                 )
                 extra_ctes.append(cte)
                 continue

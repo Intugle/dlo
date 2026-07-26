@@ -1,8 +1,8 @@
 from dataclasses import dataclass, field
 from enum import auto
+from pathlib import Path
 from typing import Optional
 
-from mashumaro.config import BaseConfig
 from quartz_cron_checker import QuartzCronChecker
 
 from dlo.common.exception import errors
@@ -64,7 +64,7 @@ class ChartDataSource(EnumBase):
 @dataclass(kw_only=True)
 class BaseResource(SchemaMixin):
     name: str
-    file_path: str
+    file_path: Path
     resource_type: ResourceTypes
     description: str = field(default="")
     tags: Optional[list[str]] = field(default=None)
@@ -74,10 +74,6 @@ class BaseResource(SchemaMixin):
     def __post_init__(self):
         if self.unique_id is None:
             self.unique_id = self.name
-
-    class Config(BaseConfig):
-        # This will remove any fields that are None
-        omit_none = True
 
 
 # =========================
@@ -103,7 +99,7 @@ class InjectedCTE(SchemaMixin):
 @dataclass
 class CompiledResourceMixin(SchemaMixin):
     sources: list[str] = field(default_factory=list)
-    compiled_path: Optional[str] = field(default=None)
+    compiled_path: Optional[Path] = field(default=None)
     compiled_code: Optional[str] = field(default=None)
     compiled: bool = field(default=False)
     depends_on: DependsOn = field(default_factory=DependsOn)
@@ -191,7 +187,7 @@ class Model(BaseResource, CompiledResourceMixin, ScheduledResourceMixin):
     primary_key: Optional[list[str]] = field(default=None)
     unique_keys: Optional[list[list[str]]] = field(default=None)
     raw_code: Optional[str] = field(default=None)
-    code_path: Optional[str] = field(default=None)
+    code_path: Optional[Path] = field(default=None)
 
     def __post_init__(self):
         super().__post_init__()
@@ -236,7 +232,7 @@ class Relationship(BaseResource):
     resource_type: ResourceTypes = field(default=ResourceTypes.relationship)
     description: Optional[str] = field(default=None)
 
-    class Config(BaseConfig):
+    class Config(BaseResource.Config):
         aliases = {
             "from_": "from",  # write as "from"
         }
@@ -348,10 +344,6 @@ class LayoutItem(SchemaMixin):
         metadata={"description": "If false, item cannot be resized but may be draggable"},
     )
 
-    class Config(BaseConfig):
-        # This will remove any fields that are None
-        omit_none = True
-
 
 # Referenced from react-grid-layout
 # https://github.com/react-grid-layout/react-grid-layout/blob/master/src/core/types.ts
@@ -377,10 +369,6 @@ class GridConfig(SchemaMixin):
         default=None,
         metadata={"description": "Maximum number of rows"},
     )
-
-    class Config(BaseConfig):
-        # This will remove any fields that are None
-        omit_none = True
 
 
 @dataclass(kw_only=True)
