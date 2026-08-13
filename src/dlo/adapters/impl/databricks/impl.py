@@ -69,6 +69,12 @@ class DatabricksRuntimeConfig(RuntimeConfig):
 
 
 class DatabricksAdapter(Adapter):
+    """Databricks adapter for DLO.
+
+    Implements model creation, query execution via SQL warehouse,
+    and job scheduling using Databricks Workflows.
+    """
+
     MODEL_TYPE_TO_TABLE_TYPE: ClassVar[dict[ModelType, str]] = {
         ModelType.materialized: "TABLE",
         ModelType.view: "VIEW",
@@ -135,6 +141,7 @@ class DatabricksAdapter(Adapter):
         self.client.api_client.do("POST", "/api/2.2/jobs/reset", body=body, headers=headers)
 
     def connection(self):
+        """Create and return a Databricks SQL connection."""
         connection = sql.connect(
             server_hostname=self.config.host,
             http_path=self.config.warehouse_http_path,
@@ -143,6 +150,7 @@ class DatabricksAdapter(Adapter):
         return connection
 
     def execute(self, query: str, cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT):
+        """Execute SQL query via Databricks SQL warehouse."""
         try:
             with self.connection() as connection:
                 with connection.cursor() as cursor:
@@ -164,6 +172,7 @@ class DatabricksAdapter(Adapter):
         return data
 
     def query(self, query: str, cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT) -> QueryResult:
+        """Execute SQL query and return results as QueryResult."""
         rows = self.execute(query, cursor_limit)
         if not rows:
             return QueryResult(columns=[], rows=[])

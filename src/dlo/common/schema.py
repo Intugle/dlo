@@ -52,7 +52,6 @@ class EnumBase(SerializableType, StrEnum):
 
 @dataclass
 class SchemaMixin(DataClassJSONMixin):
-
     class Config(BaseConfig):
         # This will remove any fields that are None
         omit_none = True

@@ -9,6 +9,12 @@ from dlo.core.models.resources import (
 
 
 class Graph:
+    """Directed acyclic graph (DAG) for managing resource dependencies.
+
+    Wraps NetworkX DiGraph to provide DLO-specific operations like topological
+    sorting, layered visualization, and subgraph extraction.
+    """
+
     def __init__(self, graph: Optional[nx.DiGraph] = None):
         if graph is None:
             graph = nx.DiGraph()
@@ -51,6 +57,14 @@ class Graph:
         return self.graph.predecessors(node_id)
 
     def draw_layer(self, nodes: NodeMap, x_gap=2.0, y_gap=2.0, figure_name="dag_layered.png"):
+        """Render graph as a layered DAG visualization.
+
+        Args:
+            nodes: Mapping of node IDs to node objects.
+            x_gap: Horizontal spacing between layers.
+            y_gap: Vertical spacing between nodes in a layer.
+            figure_name: Output filename for the PNG image.
+        """
         import matplotlib.patches as mpatches
         import matplotlib.pyplot as plt
         import matplotlib.transforms as transforms
@@ -174,6 +188,14 @@ class Graph:
         plt.close()
 
     def subgraph(self, nodes: Iterable[NodeId]) -> "Graph":
+        """Create a subgraph containing only the specified nodes.
+
+        Args:
+            nodes: Iterable of node IDs to include.
+
+        Returns:
+            New Graph instance with the subgraph.
+        """
         # Take the original networkx graph and return a subgraph containing only
         # the selected unique_id nodes.
         return Graph(self.graph.subgraph(nodes))

@@ -1,3 +1,5 @@
+"""DLO project-wide constants."""
+
 TARGET_DIR = "target"
 MANIFEST_FILE_NAME = "manifest.json"
 AGENT_FILE_NAME = "agent.json"

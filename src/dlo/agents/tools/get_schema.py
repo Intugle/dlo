@@ -14,7 +14,7 @@ class ArgsSchema(ToolArgsSchema):
 
 class GetSchema(Tool):
     name: str = "get_schema_new_test"
-    description: str = "Tool to fetch database table(s) schema (i.e DDL) along with some sample values for each table(s)."
+    description: str = "Tool to fetch database table(s) schema (i.e DDL) along with some sample values for each table(s)."  # noqa: E501
     args_schema: type[ToolArgsSchema] = ArgsSchema
     yoyo = "yoyo"
 

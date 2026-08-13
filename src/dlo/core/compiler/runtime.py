@@ -11,6 +11,12 @@ from dlo.core.parser import AgentManifestLoader, ManifestLoader
 
 
 class Runtime:
+    """Main runtime for DLO project execution.
+
+    Orchestrates manifest loading, compilation, and execution of models.
+    Provides access to adapter, compiler, and runner components.
+    """
+
     def __init__(self, project: Project, profile: Profile, manifest: Optional[Manifest] = None):
         self.project = project
         self.profile = profile
@@ -45,26 +51,39 @@ class Runtime:
         return Runner(manifest=self.manifest, adapter=self.adapter, project=self.project)
 
     def compile(self):
+        """Compile all models in the project manifest."""
         self.graph_compiler.compile()
 
     def run(self):
+        """Compile and execute all models."""
         self.compile()
 
         self.runner.run()
 
     def schedule(self):
+        """Compile and schedule models with cron expressions."""
         self.compile()
 
         self.runner.schedule()
 
     # TODO: Add Cache if enabled
     def execute_query(self, query: str, cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT):
+        """Execute an ad-hoc SQL query with ref() resolution.
+
+        Args:
+            query: SQL query string (may contain ref() calls).
+            cursor_limit: Maximum number of rows to return.
+
+        Returns:
+            QueryResult with columns and rows.
+        """
         result = self.runner.execute_query(
             query=query, graph_compiler=self.graph_compiler, cursor_limit=cursor_limit
         )
         return result
 
     def vector_search_init(self):
+        """Initialize vector search by indexing manifest resources."""
         from dlo.core.search.vector_search import VectorSearch
 
         vector_search = VectorSearch(
@@ -73,6 +92,14 @@ class Runtime:
         vector_search.initialize()
 
     def vector_search_run(self, query: str):
+        """Run semantic search over indexed resources.
+
+        Args:
+            query: Natural language search query.
+
+        Returns:
+            Search results with matching resources.
+        """
         from dlo.core.search.vector_search import VectorSearch
 
         vector_search = VectorSearch(

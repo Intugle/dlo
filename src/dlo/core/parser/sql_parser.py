@@ -4,6 +4,12 @@ import sqlglot
 
 
 class SqlParser:
+    """SQL parser for extracting dependencies and validating queries.
+
+    Uses sqlglot to parse SQL and extract table references, validate
+    SELECT statements, and identify CTEs.
+    """
+
     def __init__(self, query: str):
         self.query = query
 

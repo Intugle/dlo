@@ -29,16 +29,20 @@ def _is_async(fn):
 class ToolArgsSchema(BaseModel):
     thinking: Annotated[
         str,
-        "Reason for choosing the tool in concise form, Sacrifice grammar for the sake of concision",
+        "Reason for choosing the tool in concise form, Sacrifice grammar for the sake of concision",  # noqa: E501
     ]
 
 
 class Tool(ABC):
+    """Abstract base for class-based LangChain tool definitions.
+
+    Subclasses define name, description, args_schema, and implement
+    the tool() method for execution logic.
+    """
+
     name: Annotated[str, "name of the tool"]
     description: Annotated[str, "description of the tool"]
-    args_schema: Annotated[
-        Optional[type[ToolArgsSchema]], "Input schema for the tool"
-    ] = None
+    args_schema: Annotated[Optional[type[ToolArgsSchema]], "Input schema for the tool"] = None
 
     @staticmethod
     async def tool(
@@ -60,6 +64,7 @@ def register_tool(name: str):
         def execute_query(query: str) -> QueryResult:
             ...
     """
+
     def wrapper(fn: Callable) -> Callable:
         fn._tool_registry_name = name
         return fn

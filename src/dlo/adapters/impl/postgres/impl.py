@@ -68,6 +68,12 @@ class PostgresConfig(SchemaMixin):
 
 
 class PostgresAdapter(Adapter):
+    """Postgres database adapter for DLO.
+
+    Implements model creation, query execution, and job scheduling
+    for PostgreSQL databases.
+    """
+
     MODEL_TYPE_TO_TABLE_TYPE: ClassVar[Mapping[ModelType, str]] = {
         ModelType.materialized: "TABLE",
         ModelType.view: "VIEW",
@@ -87,12 +93,14 @@ class PostgresAdapter(Adapter):
         self.runtime_config = runtime_config
 
     def connection(self):
+        """Create and return a psycopg2 database connection."""
         if self.config.url is not None:
             log.debug("Using URL postgres config")
             return psycopg2.connect(self.config.url)
         return psycopg2.connect(**self.config.config)
 
     def execute(self, query: str, cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT):
+        """Execute SQL query without returning results (DDL/DML)."""
         with self.connection() as connection:
             with connection.cursor(cursor_factory=RealDictCursor) as cursor:
                 log.info("Executing query:\n%s", query)
@@ -104,6 +112,7 @@ class PostgresAdapter(Adapter):
         return data
 
     def query(self, query: str, cursor_limit: Optional[int] = DEFAULT_CURSOR_LIMIT) -> QueryResult:
+        """Execute SQL query and return results as QueryResult."""
         rows = self.execute(query, cursor_limit)
         if not rows:
             return QueryResult(columns=[], rows=[])

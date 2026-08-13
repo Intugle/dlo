@@ -1,3 +1,5 @@
+"""Type adapter utilities for Pydantic validation."""
+
 from typing import TypeVar
 
 from pydantic import TypeAdapter
@@ -6,4 +8,13 @@ T = TypeVar("T")
 
 
 def list_type_adapter(data: list, _typ: type[T]) -> list[T]:
+    """Validate list of dicts into list of typed Pydantic models.
+
+    Args:
+        data: List of dictionaries or dict-like objects.
+        _typ: Target Pydantic model class.
+
+    Returns:
+        List of validated model instances.
+    """
     return TypeAdapter(list[_typ]).validate_python([dict(d) for d in data])

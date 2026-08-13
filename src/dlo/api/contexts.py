@@ -1,3 +1,5 @@
+"""Context variables for sharing project/manifest/profile across async FastAPI requests."""
+
 import contextvars
 
 from dlo.core.config import Profile, Project

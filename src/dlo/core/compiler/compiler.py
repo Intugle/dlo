@@ -1,5 +1,7 @@
-"""
-Compile the whole project generate the manifest with graph dependents and generate compilied Query
+"""Graph compiler for DLO projects.
+
+Compiles project manifest into dependency graph, resolves ref() calls,
+generates compiled SQL queries, and manages scheduling dependencies.
 """
 
 import json
@@ -27,6 +29,12 @@ from dlo.core.parser import SqlParser
 
 
 class GraphCompiler:
+    """Compiles DLO manifest into executable dependency graph.
+
+    Parses SQL to extract dependencies, builds DAG, resolves ref() macros,
+    and generates compiled queries with proper CTEs and table references.
+    """
+
     def __init__(self, manifest: Manifest, project: Project):
         self.manifest: Manifest = manifest
         self.project: Project = project
@@ -96,6 +104,11 @@ class GraphCompiler:
         return formatted_dependents
 
     def get_dependents_of_nodes(self) -> Mapping[NodeId, list[str]]:
+        """Extract dependencies from model SQL by parsing ref() calls.
+
+        Returns:
+            Mapping from node ID to list of dependent node IDs.
+        """
         dependents: Mapping[NodeId, list[str]] = {}
         for node in self.nodes.values():
             # We requires dependent of model only as source don't have dependents
@@ -110,6 +123,7 @@ class GraphCompiler:
         return dependents
 
     def draw_layer(self) -> None:
+        """Generate a visual PNG of the dependency graph."""
         graph = self.graph
         figure_name = self.project.project_root_path / COMPILED_GRAPH_FIG_PATH_NODES
 
@@ -158,6 +172,11 @@ class GraphCompiler:
         return []
 
     def compile_node(self, node_unique_id: NodeId) -> None:
+        """Compile a single node by resolving dependencies and building CTEs.
+
+        Args:
+            node_unique_id: ID of the node to compile.
+        """
         node = self.nodes[node_unique_id]
 
         # Only compiled resources need compilation
@@ -187,6 +206,14 @@ class GraphCompiler:
         node.compiled_path = self.write_compiled_code_node(node)
 
     def write_compiled_code_node(self, model: CompiledResourceMixin) -> Path:
+        """Write compiled SQL to target directory.
+
+        Args:
+            model: Compiled model with code to write.
+
+        Returns:
+            Path where compiled code was written.
+        """
         code_path = Path(model.code_path)
 
         compiled_path = TARGET_DIR / code_path
@@ -205,6 +232,11 @@ class GraphCompiler:
         graph.draw_layer(nodes, figure_name=figure_name)
 
     def schedule(self, draw: bool = True) -> None:
+        """Build scheduling dependencies for cron-scheduled models.
+
+        Args:
+            draw: Whether to generate visual graphs for each schedule.
+        """
         # TODO: Duplicate Scheduling
         schedule_cron = {}
 
@@ -230,6 +262,11 @@ class GraphCompiler:
                     node.schedule_depends_on.nodes.append(predecessor_node_unique_id)
 
     def compile(self, draw_graph: bool = False) -> None:
+        """Compile all nodes in topological order and save manifest.
+
+        Args:
+            draw_graph: Whether to generate dependency graph visualization.
+        """
         if draw_graph:
             self.draw_layer()
 

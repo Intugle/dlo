@@ -1,7 +1,17 @@
+"""Utilities for working with Quartz cron expressions."""
+
 import re
 
 
 def clean_cron(cron: str) -> str:
+    """Convert cron expression to filesystem-safe string.
+
+    Args:
+        cron: Quartz cron expression.
+
+    Returns:
+        Cleaned string suitable for use in filenames.
+    """
     replacements = {
         " ": "_",
         "*": "all",

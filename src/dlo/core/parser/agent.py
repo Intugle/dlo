@@ -18,11 +18,31 @@ log = logging.getLogger(__name__)
 
 
 class AgentManifestLoader:
+    """Loads agent resources (agents, tools, tasks) from project files.
+
+    Scans markdown files in agent directories and parses them into
+    agent manifest resources based on frontmatter metadata.
+    """
+
     def __init__(self, project: Project):
         self.project = project
         self.agent_manifest = AgentManifest.__from_project__(project)
 
     def resource_factory(self, file_path: str, md_data: Post, default_model, default_key: str):
+        """Create agent resource from markdown file data.
+
+        Args:
+            file_path: Path to the markdown file.
+            md_data: Parsed frontmatter Post object.
+            default_model: Default model class for this resource type.
+            default_key: Default manifest key for storing resource.
+
+        Returns:
+            Tuple of (resource instance, manifest key).
+
+        Raises:
+            DloCompilationError: If resource parsing fails.
+        """
         model = default_model
         key = default_key
 
@@ -50,12 +70,17 @@ class AgentManifestLoader:
         return resource, key
 
     def load_for_dir(self, directory: str, default_model, default_key: str) -> None:
+        """Load and parse all markdown files in a directory.
+
+        Args:
+            directory: Directory path to scan.
+            default_model: Model class for resources in this directory.
+            default_key: Manifest key for storing resources.
+        """
         # Initalize file reader for the agent root
         reader = FileReaderFromFileSystem(directory)
 
-        log.info(
-            "Found %d files in directory: %s", len(reader.files), directory
-        )
+        log.info("Found %d files in directory: %s", len(reader.files), directory)
         # Iterate over all files and parse them based on their type
         parsed_count = 0
 
@@ -95,9 +120,7 @@ class AgentManifestLoader:
 
             if not directory.exists():
                 log.debug(
-                    "Skipping %s - directory not found: %s",
-                    config.resource_type.value,
-                    directory
+                    "Skipping %s - directory not found: %s", config.resource_type.value, directory
                 )
                 continue
 

@@ -33,7 +33,7 @@ class Hitl(EnumBase):
 
 
 @dataclass
-class ToolConfig():
+class ToolConfig:
     name: str
     hitl: Optional[bool | list[Hitl]] = field(default=None)
     call_limit: Optional[int] = field(default=None)
@@ -92,8 +92,7 @@ class Agent(BaseResource):
     @property
     def normalized_tools(self) -> list[ToolConfig]:
         return [
-            tool if isinstance(tool, ToolConfig) else ToolConfig(name=tool)
-            for tool in self.tools
+            tool if isinstance(tool, ToolConfig) else ToolConfig(name=tool) for tool in self.tools
         ]
 
 
@@ -166,9 +165,11 @@ class AgentManifest(SchemaMixin):
 # Agent Resource Factory
 # =========================
 
+
 @dataclass
 class AgentResourceConfig:
     """Configuration for an agent resource type."""
+
     resource_type: ResourceTypes
     model_class: type[BaseResource]
     manifest_key: str  # "agents" | "llm_tasks" | "tools_meta"

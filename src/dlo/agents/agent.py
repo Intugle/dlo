@@ -1,5 +1,7 @@
-"""
-Agent
+"""Agent creation and compilation for DLO.
+
+Builds LangGraph agents from agent definitions, integrates tools,
+manages dependencies, and compiles agent graphs for execution.
 """
 
 import logging
@@ -30,6 +32,12 @@ def get_weather(location: str):
 
 
 class AgentBuilder:
+    """Builds compiled LangGraph agents from agent definitions.
+
+    Resolves tools, models, sub-agents, and checkpointers to create
+    executable agent graphs supporting both ReAct and DeepAgent modes.
+    """
+
     def __init__(
         self,
         project: Project,
@@ -38,7 +46,7 @@ class AgentBuilder:
         tool_registry: ToolRegistry,
         checkpointer,
         agent_manifest: AgentManifest,
-        compiled_agents: Optional[dict[str, CompiledStateGraph]] = None
+        compiled_agents: Optional[dict[str, CompiledStateGraph]] = None,
     ):
         self.project = project
         self.profile = profile
@@ -49,6 +57,17 @@ class AgentBuilder:
         self.agent_manifest = agent_manifest
 
     def get_model(self, model: str):
+        """Resolve and create LLM model from provider/model string.
+
+        Args:
+            model: Model specification (e.g., 'openai/gpt-4').
+
+        Returns:
+            Configured ChatModel instance.
+
+        Raises:
+            DloParseError: If provider not found in profile.
+        """
         model_provider, model = model.split("/")
 
         provider = self.profile.providers.get(model_provider)
@@ -85,12 +104,15 @@ class AgentBuilder:
     @cached_property
     def tools(self):
         tools = self.agent.normalized_tools
-        return [
-            self.tool_registry.get_structured_tool(tool.name)
-            for tool in tools
-        ]
+        return [self.tool_registry.get_structured_tool(tool.name) for tool in tools]
 
     async def create_agent(self):
+        """Create and compile agent graph based on agent_type.
+
+        Returns:
+            Compiled LangGraph StateGraph for agent execution.
+        """
+
         async def _create_deep_agent(agent: Agent):
             subagents = []
             for subagent in agent.subagents:
@@ -138,6 +160,12 @@ class AgentBuilder:
 
 
 class AgentCompiler:
+    """Compiles agent manifest into executable agent graphs.
+
+    Builds dependency graph of agents, resolves tools, and compiles
+    agents in topological order to support sub-agent dependencies.
+    """
+
     def __init__(
         self,
         project: Project,
@@ -157,6 +185,7 @@ class AgentCompiler:
         self.register_users_tools()
 
     def register_users_tools(self):
+        """Discover and register user-defined tools from project/tools/ directory."""
         tools_dir = self.agent_manifest.root_dir / "tools"
 
         if tools_dir.exists():
@@ -189,6 +218,7 @@ class AgentCompiler:
         return graph
 
     def draw_layer(self) -> None:
+        """Generate visual PNG of agent dependency graph."""
         graph = self.graph
         figure_name = self.project.project_root_path / COMPILED_GRAPH_FIG_PATH_AGENTS
 
@@ -207,6 +237,11 @@ class AgentCompiler:
         return await agent_builder.create_agent()
 
     async def compile_agent(self, agent_name: str) -> None:
+        """Compile a single agent by name.
+
+        Args:
+            agent_name: Name of the agent to compile.
+        """
         agent = self.agent_manifest.agents[agent_name]
 
         compiled_agent = await self.create_agent(agent)
@@ -214,6 +249,7 @@ class AgentCompiler:
         self.compiled_agents[agent_name] = compiled_agent
 
     async def compile(self) -> None:
+        """Compile all agents in topological order, respecting sub-agent dependencies."""
         self.draw_layer()
 
         for agent_name in self.graph.topoligical_sort:
