@@ -108,7 +108,8 @@ class ManifestLoader:
             # Skip unknown resource types
             if resource_model is None:
                 log.warning(
-                    "Unknown resource type '%s' in file %s, skipping", resource_type, file_path
+                    f"Unknown resource type `{resource_type}` in file `{file_path}`, skipping\n"
+                    f"Available resource types: {Resource.model_factory.keys()}"
                 )
                 continue
 

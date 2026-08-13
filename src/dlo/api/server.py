@@ -17,7 +17,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
 from dlo import __version__
 from dlo.api.common.exception.exception_handler import (
@@ -80,6 +79,8 @@ class RegisterApp:
 
     async def startup_event(self, app_instance: FastAPI):
         """App startup events"""
+        from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
+
         app_instance.state.project = self._project
         app_instance.state.profile = self._profile
 

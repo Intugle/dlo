@@ -229,8 +229,9 @@ class GraphCompiler:
                 for predecessor_node_unique_id in cron_graph.predecessors(node.unique_id):
                     node.schedule_depends_on.nodes.append(predecessor_node_unique_id)
 
-    def compile(self) -> None:
-        self.draw_layer()
+    def compile(self, draw_graph: bool = False) -> None:
+        if draw_graph:
+            self.draw_layer()
 
         for node_unique_id in self.graph.topoligical_sort:
             self.compile_node(node_unique_id)

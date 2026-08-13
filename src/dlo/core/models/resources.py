@@ -26,6 +26,9 @@ class ResourceTypes(EnumBase):
     code = auto()
     chart = auto()
     dashboard = auto()
+    agent = auto()
+    tool_meta = auto()
+    llm_task = auto()
 
 
 class ColumnCategory(EnumBase):
@@ -60,9 +63,16 @@ class ChartDataSource(EnumBase):
 # Base Models
 # =========================
 
+@dataclass(kw_only=True)
+class MetaMixin(SchemaMixin):
+    created_on: Optional[str] = field(default=None)
+    modified_on: Optional[str] = field(default=None)
+    created_by: Optional[str] = field(default=None)
+    modified_by: Optional[str] = field(default=None)
+
 
 @dataclass(kw_only=True)
-class BaseResource(SchemaMixin):
+class BaseResource(MetaMixin, SchemaMixin):
     name: str
     file_path: Path
     resource_type: ResourceTypes
@@ -394,10 +404,13 @@ class Resource:
         "dashboards": Dashboard,
     }
 
-    def create_resource(self, resouce_type: str, data: dict):
-        model_cls = self.model_factory.get(resouce_type.lower())
+    def create_resource(self, resource_type: str, data: dict):
+        model_cls = self.model_factory.get(resource_type.lower())
         if not model_cls:
-            raise errors.DloCompilationError(f"Resource model: {resouce_type}")
+            raise errors.DloCompilationError(
+                f"Resource model not found: {resource_type}\n"
+                f"Available resource types: {self.model_factory.keys()}"
+            )
         return model_cls(**data)
 
     @classmethod
