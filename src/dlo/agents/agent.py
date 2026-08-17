@@ -26,11 +26,6 @@ from dlo.core.models.agent import Agent, AgentManifest, AgentMode, AgentType, To
 log = logging.getLogger("__name__")
 
 
-def get_weather(location: str):
-    """Get weather for a location"""
-    return f"The weather in {location} is sunny."
-
-
 class AgentBuilder:
     """Builds compiled LangGraph agents from agent definitions.
 
@@ -172,6 +167,7 @@ class AgentCompiler:
         profile: Profile,
         agent_manifest: AgentManifest,
         checkpointer,
+        tools_dirs: Optional[list[str]] = None,
     ):
         self.agent_manifest = agent_manifest
         self.profile = profile
@@ -182,6 +178,10 @@ class AgentCompiler:
         # Per-compiler tool registry — isolated
         self.tool_registry = ToolRegistry(tools_meta=self.agent_manifest.tools_meta)
         self.tool_registry.discover_and_register("dlo.agents.tools")
+
+        for tools_dir in tools_dirs or []:
+            self.tool_registry.discover_and_register(tools_dir)
+
         self.register_users_tools()
 
     def register_users_tools(self):

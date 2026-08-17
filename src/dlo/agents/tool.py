@@ -105,6 +105,56 @@ class ToolRegistry:
         except KeyError:
             raise errors.MethodNotFoundError(f"unknown tools type {name!r}")
 
+    def get_all_tools_with_description(self):
+        tools_with_description = {}
+        for tkey, tool in self.tools.items():
+            description = None
+            args_schema = None
+            name = None
+
+            # For the class based tool
+            if isinstance(tool, type) and issubclass(tool, Tool):
+                tool_instance: Tool = tool()
+                name = tool_instance.name
+                description = tool_instance.description
+                args_schema = (
+                    tool_instance.args_schema.model_json_schema()
+                    if tool_instance.args_schema
+                    else None
+                )
+            else:
+                name = tool.__name__
+                description = inspect.getdoc(tool)
+                # Create a validated dictionary layout using TypeAdapter
+                sig = inspect.signature(tool)
+                type_hints = {
+                    name: (
+                        param.annotation,
+                        ... if param.default == inspect.Parameter.empty else param.default,
+                    )
+                    for name, param in sig.parameters.items()
+                }
+
+                # Generate standard JSON Schema
+                from pydantic import create_model
+
+                DynamicModel = create_model("FunctionArgs", **type_hints)
+                args_schema = DynamicModel.model_json_schema()
+
+            # Override metadata from the tools_meta
+            if tool_meta := self.tools_meta.get(name):
+                name = tool_meta.name
+                description = tool_meta.description
+
+            tools_with_description[tkey] = {
+                "unique_id": tkey,
+                "name": name,
+                "description": description,
+                "args_schema": args_schema,
+            }
+
+        return tools_with_description
+
     def get_structured_tool(self, name: str) -> StructuredTool:
         tool = self.get(name)
         try:
