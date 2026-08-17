@@ -6,6 +6,7 @@ from pathlib import Path
 
 from jinja2 import Environment, FileSystemLoader
 
+from dlo import __version__
 from dlo.common.exception import errors
 
 TEMPLATE_PATH = "dlo.templates"
@@ -13,19 +14,21 @@ TEMPLATE_PATH = "dlo.templates"
 
 # NOTE: Use copier if bootstrap project becomes complex
 class InitProject:
-    def __init__(self, project_name: str, profile: str, template: str):
+    def __init__(
+        self, project_name: str, profile: str, template: str, target_dir: Path = Path.cwd()
+    ):
         self.template = template
         self.project_name = project_name
         self.profile = profile
-        self.target_dir = Path.cwd()
+        self.target_dir = target_dir
 
     @cached_property
     def template_root(self):
         return files(TEMPLATE_PATH).joinpath(self.template)
 
-    def initalize(self):
+    def initalize(self, force: bool = False):
         # Check if target_dir is empty
-        if any(self.target_dir.iterdir()):
+        if not force and any(self.target_dir.iterdir()):
             raise errors.DloRuntimeError("Directory is not empty. It must be empty")
 
         # Intialize env for loading jinja templates
@@ -34,6 +37,7 @@ class InitProject:
         context = {
             "project_name": self.project_name,
             "profile": self.profile,
+            "version": __version__.version,
         }
 
         # Iterate over all the template files

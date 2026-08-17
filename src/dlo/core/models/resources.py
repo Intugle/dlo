@@ -1,12 +1,18 @@
+import logging
+
 from dataclasses import dataclass, field
 from enum import auto
 from pathlib import Path
 from typing import Optional
 
+import aiofiles.os
+
 from quartz_cron_checker import QuartzCronChecker
 
 from dlo.common.exception import errors
 from dlo.common.schema import EnumBase, SchemaMixin
+
+log = logging.getLogger(__name__)
 
 # =========================
 # Enums
@@ -91,6 +97,19 @@ class BaseResource(MetaMixin, SchemaMixin):
     def __post_init__(self):
         if self.unique_id is None:
             self.unique_id = self.name
+
+    def remove(self):
+        self.file_path.unlink(missing_ok=True)
+
+    async def aremove(self):
+        try:
+            # Asynchronously removes the file
+            await aiofiles.os.remove(self.file_path)
+            log.debug(f"Successfully deleted {self.file_path}")
+        except FileNotFoundError:
+            log.error(f"Error: {self.file_path} does not exist.")
+        except PermissionError:
+            log.error(f"Error: Insufficient permissions to delete {self.file_path}.")
 
 
 # =========================
