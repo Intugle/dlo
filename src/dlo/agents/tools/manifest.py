@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Optional
 
-from langchain.tools import ToolException, tool
+from langchain.tools import ToolException
 
-from dlo.agents.tool import ToolRegistry
+from dlo.agents.tool import register_tool
 from dlo.api.contexts import current_manifest
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ def get_manifest():
     return manifest
 
 
-@tool()
+@register_tool("get_tables")
 def get_tables() -> list[dict]:
     """Get tables from the semantic layer"""
     manifest: Manifest = get_manifest()
@@ -34,7 +34,7 @@ def get_tables() -> list[dict]:
     return tables
 
 
-@tool()
+@register_tool("get_schema")
 def get_schema(table_name: str):
     """Get schema (create statement) of the specific table
 
@@ -78,6 +78,3 @@ def fewshot_fetcher(): ...
 # Send error message to the llm instead of crashing
 get_tables.handle_tool_error = True
 get_schema.handle_tool_error = True
-
-ToolRegistry.register("get_tables", get_tables)
-ToolRegistry.register("get_schema", get_schema)

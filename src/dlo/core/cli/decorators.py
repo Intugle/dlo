@@ -1,3 +1,5 @@
+"""Click decorators for CLI commands, handling project/profile/manifest loading."""
+
 import functools
 
 from pathlib import Path

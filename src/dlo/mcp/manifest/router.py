@@ -1,3 +1,5 @@
+"""MCP tools for manifest operations."""
+
 from fastmcp import FastMCP
 
 mcp = FastMCP(name="Manifest MCP")

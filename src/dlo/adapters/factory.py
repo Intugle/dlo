@@ -25,6 +25,12 @@ def import_module(name: str) -> ModuleInterface:
 
 
 class AdapterFactory:
+    """Factory for creating and managing database adapter instances.
+
+    Supports plugin-based adapter registration with lazy loading. Adapters are
+    discovered from plugin packages and loaded on-demand when first requested.
+    """
+
     adapters: dict[str, Callable[..., Adapter]] = {}
     _plugin_registry: dict[str, str] = {}  # name -> module path (not yet imported)
 

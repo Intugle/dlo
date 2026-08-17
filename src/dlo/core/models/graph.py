@@ -1,3 +1,5 @@
+"""Graph node type definitions for DLO resource graphs."""
+
 from typing import Mapping, NewType, TypeAlias
 
 from dlo.core.models.resources import Model, Source

@@ -4,6 +4,12 @@ import sqlglot
 
 
 class SqlParser:
+    """SQL parser for extracting dependencies and validating queries.
+
+    Uses sqlglot to parse SQL and extract table references, validate
+    SELECT statements, and identify CTEs.
+    """
+
     def __init__(self, query: str):
         self.query = query
 
@@ -32,6 +38,13 @@ class SqlParser:
             return False
 
     def extract_table(self) -> set:
+        """
+        Extracts all table names referenced in the SQL query, excluding CTEs.
+
+        Returns:
+            set: A set of fully qualified table names in the format 'catalog.db.table'
+                 or partial names if catalog/db are not specified. CTE names are excluded.
+        """
         # Get CTE names so we can exclude them
         ctes = self.expr.find_all(sqlglot.exp.CTE)
         cte_names = {cte.alias_or_name for cte in ctes}

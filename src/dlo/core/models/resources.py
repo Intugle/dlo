@@ -26,6 +26,9 @@ class ResourceTypes(EnumBase):
     code = auto()
     chart = auto()
     dashboard = auto()
+    agent = auto()
+    tool_meta = auto()
+    llm_task = auto()
 
 
 class ColumnCategory(EnumBase):
@@ -62,7 +65,21 @@ class ChartDataSource(EnumBase):
 
 
 @dataclass(kw_only=True)
-class BaseResource(SchemaMixin):
+class MetaMixin(SchemaMixin):
+    created_on: Optional[str] = field(default=None)
+    modified_on: Optional[str] = field(default=None)
+    created_by: Optional[str] = field(default=None)
+    modified_by: Optional[str] = field(default=None)
+
+
+@dataclass(kw_only=True)
+class BaseResource(MetaMixin, SchemaMixin):
+    """Base class for all DLO resources (models, sources, charts, etc).
+
+    Provides common fields like name, file path, description, and metadata
+    tracking for resource lineage and documentation.
+    """
+
     name: str
     file_path: Path
     resource_type: ResourceTypes
@@ -86,6 +103,11 @@ class DependsOn(SchemaMixin):
     nodes: list[str] = field(default_factory=list)
 
     def add_node(self, value: str):
+        """Add a dependency node if not already present.
+
+        Args:
+            value: Node name/ID to add as dependency.
+        """
         if value not in self.nodes:
             self.nodes.append(value)
 
@@ -148,6 +170,12 @@ class SourceDetails(SchemaMixin):
 
 @dataclass(kw_only=True)
 class Source(BaseResource):
+    """Represents a data source (table, CSV, etc) in the warehouse.
+
+    Sources are the raw data inputs that models transform. They include
+    schema information, connection details, and constraints.
+    """
+
     name: str
     details: SourceDetails
     columns: list[Column] = field(default_factory=list)
@@ -176,6 +204,13 @@ class ModelDetails(SchemaMixin):
 
 @dataclass(kw_only=True)
 class Model(BaseResource, CompiledResourceMixin, ScheduledResourceMixin):
+    """Represents a data transformation model in DLO.
+
+    Models are SQL-based transformations that create materialized tables,
+    views, or ephemeral CTEs. They track dependencies, support scheduling,
+    and can be compiled for execution.
+    """
+
     name: str
     type: ModelType
     columns: list[Column] = field(default_factory=list)
@@ -224,6 +259,12 @@ class Model(BaseResource, CompiledResourceMixin, ScheduledResourceMixin):
 
 @dataclass(kw_only=True)
 class Relationship(BaseResource):
+    """Defines a relationship between two models/sources.
+
+    Relationships establish connections between resources based on column
+    mappings, enabling semantic understanding of data lineage.
+    """
+
     name: str
     from_: str = field(metadata={"alias": "from"})
     to: str
@@ -275,6 +316,12 @@ class ChartEngine(EnumBase):
 
 @dataclass(kw_only=True)
 class Chart(BaseResource):
+    """Represents a data visualization chart.
+
+    Charts can pull data from SQL queries or models and support various
+    visualization engines (ECharts, custom). Includes caching via freshness.
+    """
+
     sql: Optional[str] = field(default=None)
     model: Optional[str] = field(default=None)
     resource_type: ResourceTypes = field(default=ResourceTypes.chart)
@@ -373,6 +420,12 @@ class GridConfig(SchemaMixin):
 
 @dataclass(kw_only=True)
 class Dashboard(BaseResource):
+    """Represents a dashboard containing multiple charts.
+
+    Dashboards organize charts in a grid layout with configurable positioning
+    and sizing based on react-grid-layout.
+    """
+
     resource_type: ResourceTypes = field(default=ResourceTypes.dashboard)
     charts: dict[str, str] = field(default_factory=dict)
     layout: list[LayoutItem] = field(default_factory=list)
@@ -385,6 +438,12 @@ class Dashboard(BaseResource):
 
 
 class Resource:
+    """Factory for creating resource instances from configuration data.
+
+    Maps resource type strings to their corresponding model classes and
+    provides validation during resource creation.
+    """
+
     model_factory = {
         "models": Model,
         "relationships": Relationship,
@@ -394,10 +453,25 @@ class Resource:
         "dashboards": Dashboard,
     }
 
-    def create_resource(self, resouce_type: str, data: dict):
-        model_cls = self.model_factory.get(resouce_type.lower())
+    def create_resource(self, resource_type: str, data: dict):
+        """Create a resource instance from type and data dict.
+
+        Args:
+            resource_type: Resource type string (e.g., 'models', 'sources').
+            data: Dictionary containing resource configuration.
+
+        Returns:
+            Resource instance of the appropriate type.
+
+        Raises:
+            DloCompilationError: If resource type is unknown.
+        """
+        model_cls = self.model_factory.get(resource_type.lower())
         if not model_cls:
-            raise errors.DloCompilationError(f"Resource model: {resouce_type}")
+            raise errors.DloCompilationError(
+                f"Resource model not found: {resource_type}\n"
+                f"Available resource types: {self.model_factory.keys()}"
+            )
         return model_cls(**data)
 
     @classmethod

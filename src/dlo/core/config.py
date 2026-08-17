@@ -1,3 +1,5 @@
+"""DLO project and profile configuration models."""
+
 import logging
 
 from dataclasses import dataclass, field
@@ -57,6 +59,12 @@ class VectorSearchConfig(SchemaMixin):
 
 @dataclass
 class Project(SchemaMixin):
+    """DLO project configuration.
+
+    Loaded from config.yaml, defines project metadata, database profile,
+    runtime settings, and vector search configuration.
+    """
+
     name: str
     project_root: str
     version: str
@@ -130,6 +138,12 @@ class ChatModel(SchemaMixin):
 
 @dataclass
 class Profile(SchemaMixin):
+    """DLO profile configuration.
+
+    Defines database engine, embeddings, vector stores, and LLM providers.
+    Loaded from profile.yaml or ~/.config/dlo/profile.yml.
+    """
+
     engine: Engine
     connections: Optional[dict[str, Connection]] = field(default=None)
     embeddings: Optional[dict[str, Embeddings]] = field(default=None)

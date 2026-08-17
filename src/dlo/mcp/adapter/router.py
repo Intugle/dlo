@@ -1,3 +1,5 @@
+"""MCP tools for adapter management operations."""
+
 from fastmcp import FastMCP
 
 mcp = FastMCP(name="Adapter MCP")

@@ -1,10 +1,10 @@
 from typing import TYPE_CHECKING
 
-from langchain.tools import ToolException, tool
+from langchain.tools import ToolException
 from pydantic import BaseModel, Field
 
 from dlo.adapters.model import QueryResult
-from dlo.agents.tool import ToolRegistry
+from dlo.agents.tool import register_tool
 from dlo.api.contexts import current_manifest, current_profile, current_project
 from dlo.core.compiler.runtime import Runtime
 
@@ -19,7 +19,7 @@ class ExecuteQueryArgs(BaseModel):
     query: str = Field(description="Query to be executed")
 
 
-@tool(args_schema=ExecuteQueryArgs)
+@register_tool("execute_query")
 def execute_query(query: str) -> QueryResult:
     """Exeucte query and return data"""
     manifest: Manifest = current_manifest.get()
@@ -40,5 +40,3 @@ def execute_query(query: str) -> QueryResult:
 
 # Send error message to the llm instead of crashing
 execute_query.handle_tool_error = True
-
-ToolRegistry.register("execute_query", execute_query)

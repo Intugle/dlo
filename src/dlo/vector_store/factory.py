@@ -25,6 +25,12 @@ def import_module(name: str) -> ModuleInterface:
 
 
 class VectorStoreFactory:
+    """Factory for creating and managing vector store instances.
+
+    Supports plugin-based vector store registration with lazy loading. Vector stores
+    are discovered from plugin packages and loaded on-demand when first requested.
+    """
+
     vector_stores: dict[str, Callable[..., VectorStore]] = {}
     _plugin_registry: dict[str, str] = {}  # name -> module path (not yet imported)
 

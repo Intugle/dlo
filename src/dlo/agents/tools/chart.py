@@ -1,9 +1,9 @@
 from typing import TYPE_CHECKING
 
-from langchain.tools import ToolException, tool
+from langchain.tools import ToolException
 from pydantic import BaseModel, Field
 
-from dlo.agents.tool import ToolRegistry
+from dlo.agents.tool import register_tool
 from dlo.api.contexts import current_manifest, current_profile, current_project
 from dlo.core.compiler.runtime import Runtime
 
@@ -53,7 +53,7 @@ class ExecuteQueryArgs(BaseModel):
     )
 
 
-@tool()
+@register_tool("chart_generation")
 def chart_generation(query: str, echarts_option: dict) -> dict:
     """Generate chart using echarts"""
     manifest: Manifest = current_manifest.get()
@@ -82,5 +82,3 @@ def chart_generation(query: str, echarts_option: dict) -> dict:
 
 # Send error message to the llm instead of crashing
 chart_generation.handle_tool_error = True
-
-ToolRegistry.register("chart_generation", chart_generation)
