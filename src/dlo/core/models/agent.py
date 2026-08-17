@@ -25,9 +25,11 @@ log = logging.getLogger(__name__)
 # Agents Mixins
 # =========================
 
+
 @runtime_checkable
 class MarkdownSaveable(Protocol):
     """Protocol for resources that can save as markdown with frontmatter."""
+
     prompt: str
     file_path: Path
 
@@ -35,7 +37,7 @@ class MarkdownSaveable(Protocol):
 
 
 @dataclass
-class SaveMarkdownMixin():
+class SaveMarkdownMixin:
     """Mixin providing markdown save functionality.
 
     Requires: prompt, file_path, to_dict() method.
