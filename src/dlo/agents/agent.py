@@ -185,7 +185,8 @@ class AgentCompiler:
 
         # Per-compiler tool registry — isolated
         self.tool_registry = ToolRegistry(tools_meta=self.agent_manifest.tools_meta)
-        self.tool_registry.discover_and_register("dlo.agents.tools")
+        # NOTE: Removed for now as it is not required the global tools space is passed in arguments
+        # self.tool_registry.discover_and_register("dlo.agents.tools")
 
         for tools_dir in tools_dirs or []:
             self.tool_registry.discover_and_register(tools_dir)

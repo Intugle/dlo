@@ -173,7 +173,12 @@ class Agent(BaseResource, SaveMarkdownMixin):
 
     def __post_serialize__(self, d: dict) -> dict:
         d["skills"] = self._raw_skills
-        d["agent_type"] = self._raw_agent_type
+
+        raw_agent_type = self._raw_agent_type
+        if raw_agent_type is not None:
+            raw_agent_type = raw_agent_type.value
+        d["agent_type"] = raw_agent_type
+
         return d
 
     class Config(BaseResource.Config):
