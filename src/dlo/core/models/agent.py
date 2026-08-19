@@ -5,12 +5,13 @@ import logging
 from dataclasses import dataclass, field
 from enum import auto
 from pathlib import Path
-from typing import Any, Optional, Protocol, runtime_checkable
+from typing import Optional, Protocol, runtime_checkable
 
 import aiofiles
 import frontmatter
 
-# from deepagents.middleware.filesystem import FilesystemPermission
+from deepagents.middleware.filesystem import FilesystemPermission
+
 from dlo.common.exception import errors
 from dlo.common.schema import EnumBase, SchemaMixin
 from dlo.core.config import Project
@@ -133,7 +134,7 @@ class Agent(BaseResource, SaveMarkdownMixin):
     temperature: Optional[float] = field(default=None)
     reasoning_effort: Optional[str] = field(default=None)
 
-    filesystem_permissions: list[Any] = field(default_factory=list)
+    filesystem_permissions: list[FilesystemPermission] = field(default_factory=list)
     subagents: list[str] = field(default_factory=list)
     skills: list[str] = field(default_factory=list)
     tools: list[str | ToolConfig] = field(default_factory=list)
@@ -157,13 +158,23 @@ class Agent(BaseResource, SaveMarkdownMixin):
     def __post_init__(self):
         super().__post_init__()
 
+        # keep the original (relative) skill paths for round-tripping/serialization
+        self._raw_skills = list(self.skills)
+        self._raw_agent_type = self.agent_type
+
         if self.base_dir and self.skills:
             self.skills = [(Path(self.base_dir) / Path(s)).as_posix() + "/" for s in self.skills]
+
         if self.agent_type is None:
-            if self.subagents or self.filesystem_permissions:
+            if self.subagents or self.filesystem_permissions or self.skills:
                 self.agent_type = AgentType.deepagent
             else:
                 self.agent_type = AgentType.standard
+
+    def __post_serialize__(self, d: dict) -> dict:
+        d["skills"] = self._raw_skills
+        d["agent_type"] = self._raw_agent_type
+        return d
 
     class Config(BaseResource.Config):
         aliases = {
@@ -219,6 +230,21 @@ class LLMTask(BaseResource, SaveMarkdownMixin):
 
 
 # =========================
+# LLMTask Models
+# =========================
+
+
+@dataclass
+class Skills(SchemaMixin):
+    name: str
+    path: str
+    unique_id: Optional[str] = field(default=None)
+
+    def __post_init__(self):
+        if self.unique_id is None:
+            self.unique_id = self.path
+
+# =========================
 # AgentManifest Models
 # =========================
 
@@ -230,6 +256,7 @@ class AgentManifest(SchemaMixin):
     agents: dict[str, Agent] = field(default_factory=dict)
     tools_meta: dict[str, ToolMeta] = field(default_factory=dict)
     llm_tasks: dict[str, LLMTask] = field(default_factory=dict)
+    skills: dict[str, Skills] = field(default_factory=dict)
 
     @classmethod
     def __from_project__(cls, project: Project):

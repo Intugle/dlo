@@ -1,5 +1,6 @@
 import logging
 
+from functools import cached_property
 from pathlib import Path
 
 from frontmatter import Post
@@ -10,6 +11,7 @@ from dlo.core.models.agent import (
     AGENT_RESOURCE_REGISTRY,
     AgentManifest,
     AgentResource,
+    Skills,
 )
 from dlo.core.parser.file_reader import FileReaderFromFileSystem
 
@@ -111,10 +113,27 @@ class AgentManifestLoader:
 
         log.info("Finished parsing agent files. Parsed: %d", parsed_count)
 
+    @cached_property
+    def skills_dir(self) -> Path:
+        return self.agent_manifest.root_dir / "skills"
+
+    def load_skills(self):
+        if not self.skills_dir.is_dir():
+            return
+        skills = {}
+        for sk in self.skills_dir.iterdir():
+            if sk.is_dir():
+                sk_name = sk.name
+                skill = Skills(name=sk_name, path=f"skills/{sk_name}")
+                skills[skill.unique_id] = skill
+
+        self.agent_manifest.skills = skills
+
     def load(self) -> AgentManifest:
         """Load all agent resources defined in AGENT_RESOURCE_REGISTRY."""
         log.info("Starting Agent load for project: %s", self.project.project_root)
 
+        # Load agents, tools, llm_tasks
         for config in AGENT_RESOURCE_REGISTRY:
             directory = self.agent_manifest.root_dir / config.directory_name
 
@@ -130,6 +149,9 @@ class AgentManifestLoader:
                 default_model=config.model_class,
                 default_key=config.manifest_key,
             )
+
+        # Load skills
+        self.load_skills()
 
         log.debug("Final agents state: %s", self.agent_manifest)
 
