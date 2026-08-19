@@ -131,9 +131,20 @@ class VectorStore(SchemaMixin):
 
 
 @dataclass
+class LLMModel(SchemaMixin):
+    name: str
+
+
+@dataclass
 class ChatModel(SchemaMixin):
     provider: str
     config: dict = field(default_factory=dict)
+    name: Optional[str] = field(default=None)
+    models: Optional[dict[str, LLMModel]] = field(default=None)
+
+    def __post_init__(self):
+        if self.name is None:
+            self.name = self.provider
 
 
 @dataclass

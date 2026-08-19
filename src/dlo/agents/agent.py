@@ -42,6 +42,7 @@ class AgentBuilder:
         checkpointer,
         agent_manifest: AgentManifest,
         compiled_agents: Optional[dict[str, CompiledStateGraph]] = None,
+        middleware: Optional[list] = None,
     ):
         self.project = project
         self.profile = profile
@@ -50,6 +51,10 @@ class AgentBuilder:
         self.compiled_agents = compiled_agents
         self.checkpointer = checkpointer
         self.agent_manifest = agent_manifest
+
+        self.middleware = middleware
+        if self.middleware is None:
+            self.middleware = []
 
     def get_model(self, model: str):
         """Resolve and create LLM model from provider/model string.
@@ -122,7 +127,7 @@ class AgentBuilder:
 
             return create_deep_agent(
                 model=self.model,
-                middleware=[CopilotKitMiddleware()],  # for frontend tools and context
+                middleware=[CopilotKitMiddleware(), *self.middleware],  # for frontend tools and context
                 system_prompt=agent.prompt,
                 tools=self.tools,
                 checkpointer=self.checkpointer,
@@ -137,6 +142,7 @@ class AgentBuilder:
         async def _create_standard_agent(agent: Agent):
             custom_graph = create_agent(
                 model=self.model,
+                middleware=[CopilotKitMiddleware(), *self.middleware],  # for frontend tools and context
                 system_prompt=agent.prompt,
                 tools=self.tools,
                 checkpointer=self.checkpointer,
@@ -168,12 +174,14 @@ class AgentCompiler:
         agent_manifest: AgentManifest,
         checkpointer,
         tools_dirs: Optional[list[str]] = None,
+        middleware: Optional[list] = None,
     ):
         self.agent_manifest = agent_manifest
         self.profile = profile
         self.project = project
         self.compiled_agents: dict[str, CompiledStateGraph] = {}
         self.checkpointer = checkpointer
+        self.middleware = middleware
 
         # Per-compiler tool registry — isolated
         self.tool_registry = ToolRegistry(tools_meta=self.agent_manifest.tools_meta)
@@ -233,6 +241,7 @@ class AgentCompiler:
             tool_registry=self.tool_registry,
             checkpointer=self.checkpointer,
             agent_manifest=self.agent_manifest,
+            middleware=self.middleware,
         )
         return await agent_builder.create_agent()
 
