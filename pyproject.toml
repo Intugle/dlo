@@ -62,6 +62,14 @@ agents = [
     "python-frontmatter>=1.1.0",
 ]
 
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.package-data]
+dlo = [
+    "templates/**/*",
+]
+
 [tool.ruff]
 src = ["src"]
 

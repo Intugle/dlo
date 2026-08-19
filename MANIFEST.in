@@ -1,0 +1,3 @@
+# Include all files from templates directory recursively
+# This includes hidden directories (.dlo) and dotfiles (.gitkeep, .gitignore)
+graft src/dlo/templates
