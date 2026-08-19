@@ -132,7 +132,7 @@ class AgentBuilder:
                 tools=self.tools,
                 checkpointer=self.checkpointer,
                 subagents=subagents,
-                # permissions=agent.permissions,
+                permissions=agent.filesystem_permissions,
                 backend=FilesystemBackend(
                     root_dir=self.project.project_root_path, virtual_mode=True
                 ),
