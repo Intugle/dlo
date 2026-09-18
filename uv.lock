@@ -900,8 +900,6 @@ source = { editable = "." }
 dependencies = [
     { name = "aiofiles" },
     { name = "click" },
-    { name = "fastapi" },
-    { name = "fastmcp" },
     { name = "jinja2" },
     { name = "json-schema-to-pydantic" },
     { name = "mashumaro" },
@@ -910,7 +908,6 @@ dependencies = [
     { name = "pyyaml" },
     { name = "quartz-cron-checker" },
     { name = "sqlglot" },
-    { name = "uvicorn", extra = ["standard"] },
 ]
 
 [package.dev-dependencies]
@@ -936,6 +933,11 @@ lint = [
 postgres = [
     { name = "psycopg2-binary" },
 ]
+server = [
+    { name = "fastapi" },
+    { name = "fastmcp" },
+    { name = "uvicorn", extra = ["standard"] },
+]
 test = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
@@ -953,8 +955,6 @@ vector-store = [
 requires-dist = [
     { name = "aiofiles", specifier = ">=25.1.0" },
     { name = "click", specifier = ">=8.3.1" },
-    { name = "fastapi", specifier = ">=0.135.1" },
-    { name = "fastmcp", specifier = ">=3.1.0" },
     { name = "jinja2", specifier = ">=3.1.6" },
     { name = "json-schema-to-pydantic", specifier = ">=0.4.11" },
     { name = "mashumaro" },
@@ -962,8 +962,7 @@ requires-dist = [
     { name = "pydantic", specifier = ">=2.12.5" },
     { name = "pyyaml", specifier = ">=6.0.3" },
     { name = "quartz-cron-checker", specifier = ">=0.2.1" },
-    { name = "sqlglot", specifier = ">=29.0.1" },
-    { name = "uvicorn", extras = ["standard"], specifier = ">=0.34.0" },
+    { name = "sqlglot", specifier = ">=27.29.0" },
 ]
 
 [package.metadata.requires-dev]
@@ -985,6 +984,11 @@ dev = [
 ]
 lint = [{ name = "ruff" }]
 postgres = [{ name = "psycopg2-binary", specifier = ">=2.9.12" }]
+server = [
+    { name = "fastapi", specifier = ">=0.135.1" },
+    { name = "fastmcp", specifier = ">=3.1.0" },
+    { name = "uvicorn", extras = ["standard"], specifier = ">=0.34.0" },
+]
 test = [
     { name = "pytest" },
     { name = "pytest-asyncio" },

@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dlo"
-version = "0.0.1"
+version = "0.0.2"
 description = "Data Lineage Orchestrator"
 authors = [{ name = "Juhel", email = "jpphanju54@gmail.com" }]
 license = "Apache-2.0"
@@ -16,11 +16,8 @@ dependencies = [
     "pyyaml>=6.0.3",
     "mashumaro",
     "networkx>=3.4.2",
-    "sqlglot>=29.0.1",
+    "sqlglot>=27.29.0",
     "quartz-cron-checker>=0.2.1",
-    "fastmcp>=3.1.0",
-    "fastapi>=0.135.1",
-    "uvicorn[standard]>=0.34.0",
     "jinja2>=3.1.6",
     "json-schema-to-pydantic>=0.4.11",
     "aiofiles>=25.1.0",
@@ -52,6 +49,11 @@ vector_store = [
     "langchain-openai>=1.1.12",
     "langchain-chroma>=0.1.2",
     "langchain-qdrant>=1.1.0",
+]
+server = [
+    "fastmcp>=3.1.0",
+    "fastapi>=0.135.1",
+    "uvicorn[standard]>=0.34.0",
 ]
 agents = [
     "ag-ui-langgraph>=0.0.35",
