@@ -127,7 +127,8 @@ class AgentBuilder:
 
             return create_deep_agent(
                 model=self.model,
-                middleware=[CopilotKitMiddleware(), *self.middleware],  # for frontend tools and context
+                # for frontend tools and context
+                middleware=[CopilotKitMiddleware(), *self.middleware],
                 system_prompt=agent.prompt,
                 tools=self.tools,
                 checkpointer=self.checkpointer,
@@ -142,7 +143,8 @@ class AgentBuilder:
         async def _create_standard_agent(agent: Agent):
             custom_graph = create_agent(
                 model=self.model,
-                middleware=[CopilotKitMiddleware(), *self.middleware],  # for frontend tools and context
+                # for frontend tools and context
+                middleware=[CopilotKitMiddleware(), *self.middleware],
                 system_prompt=agent.prompt,
                 tools=self.tools,
                 checkpointer=self.checkpointer,
