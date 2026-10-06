@@ -75,6 +75,11 @@ dlo = [
 [tool.ruff]
 src = ["src"]
 
+[tool.uv]
+override-dependencies = [
+    "oauthlib>=4.0.0",
+]
+
 [tool.mypy]
 mypy_path = "src"
 
