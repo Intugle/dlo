@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dlo"
-version = "0.0.2"
+version = "0.0.3"
 description = "Data Lineage Orchestrator"
 authors = [{ name = "Juhel", email = "jpphanju54@gmail.com" }]
 license = "Apache-2.0"
@@ -44,14 +44,14 @@ postgres = [
 ]
 vector_store = [
     "faiss-cpu>=1.13.2",
-    "fastembed>=0.8.0",
+    "fastembed>=0.9.1",
     "langchain-community>=0.4.1",
     "langchain-openai>=1.1.12",
     "langchain-chroma>=0.1.2",
     "langchain-qdrant>=1.1.0",
 ]
 server = [
-    "fastmcp>=3.1.0",
+    "fastmcp>=4.1.2",
     "fastapi>=0.135.1",
     "uvicorn[standard]>=0.34.0",
 ]
@@ -59,7 +59,7 @@ agents = [
     "ag-ui-langgraph>=0.0.35",
     "copilotkit>=0.1.88",
     "deepagents>=0.5.6",
-    "langgraph-checkpoint-sqlite>=3.0.3",
+    "langgraph-checkpoint-sqlite>=3.1.2",
     "langfuse>=4.5.1",
     "python-frontmatter>=1.1.0",
 ]
@@ -76,8 +76,11 @@ dlo = [
 src = ["src"]
 
 [tool.uv]
+constraint-dependencies = [
+    "pillow>=13.0.0",
+]
 override-dependencies = [
-    "oauthlib>=4.0.0",
+    "oauthlib>=4.0.1",
 ]
 
 [tool.mypy]
